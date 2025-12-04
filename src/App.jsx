@@ -23,14 +23,12 @@ const thTdStyles = {
     border: '1px solid #ddd',
     padding: '12px',
     textAlign: 'left',
-    // 💡 Add explicit text color for data cells to ensure visibility on various backgrounds
     color: '#333', 
 };
 
 const thStyles = {
     ...thTdStyles,
-    // Slightly darker blue for better contrast
-    backgroundColor: '#2c3e50', 
+    backgroundColor: '#2c3e50',
     color: 'white',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
@@ -41,7 +39,7 @@ const buttonGroupStyles = {
     justifyContent: 'center',
     alignItems: 'center',
     gap: '10px',
-    marginBottom: '15px', // Added margin for separation
+    marginBottom: '15px',
 };
 
 const buttonBaseStyles = {
@@ -53,13 +51,12 @@ const buttonBaseStyles = {
     fontWeight: 'bold',
     backgroundColor: '#fff',
     transition: 'background-color 0.2s',
-    color: '#333', // Ensure button text is visible
-    minWidth: '100px', // Standardize button width
+    color: '#333',
+    minWidth: '100px',
 };
 
 const buttonActiveStyles = {
     ...buttonBaseStyles,
-    // Match the dark header color for a cohesive look
     backgroundColor: '#2c3e50',
     color: 'white',
     border: '1px solid #2c3e50',
@@ -71,7 +68,6 @@ const buttonDisabledStyles = {
     opacity: 0.5,
 };
 
-// New style for page number buttons
 const pageNumberStyles = {
     padding: '8px 12px',
     cursor: 'pointer',
@@ -81,7 +77,6 @@ const pageNumberStyles = {
     margin: '0 3px',
     backgroundColor: '#f5f5f5',
     color: '#333',
-    fontWeight: 'normal',
 };
 
 const pageNumberActiveStyles = {
@@ -97,20 +92,26 @@ function App() {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // --- Data Fetching with Error Handling ---
+    // --- FIXED: Data Fetching with Alert on Error ---
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await fetch(API_URL);
+
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error("Network response was not ok");
                 }
+
                 const result = await response.json();
                 setData(result);
+
             } catch (err) {
                 console.error("Fetching error:", err);
-                // 💡 Requirement: In case of failure, display 'failed to fetch data'
-                setError('failed to fetch data'); 
+
+                // REQUIRED FOR TEST: alert on error
+                alert("failed to fetch data");
+
+                setError("failed to fetch data");
             } finally {
                 setLoading(false);
             }
@@ -119,43 +120,34 @@ function App() {
         fetchData();
     }, []);
 
-    // --- Pagination Calculations ---
     const totalPages = Math.ceil(data.length / ROWS_PER_PAGE);
-    
-    // Create an array of page numbers for direct navigation buttons
+
     const pageNumbers = useMemo(() => {
         return Array.from({ length: totalPages }, (_, i) => i + 1);
     }, [totalPages]);
 
-    // Memoize the data slice to only recalculate when data or page changes
     const currentData = useMemo(() => {
         const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-        const endIndex = startIndex + ROWS_PER_PAGE;
-        return data.slice(startIndex, endIndex);
+        return data.slice(startIndex, startIndex + ROWS_PER_PAGE);
     }, [data, currentPage]);
 
-    // --- Handlers for Pagination Buttons ---
     const handleNext = () => {
-        setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages));
+        setCurrentPage(prev => Math.min(prev + 1, totalPages));
     };
 
     const handlePrevious = () => {
-        setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+        setCurrentPage(prev => Math.max(prev - 1, 1));
     };
-    
-    // Handler for direct page number clicks
+
     const goToPage = (page) => {
         setCurrentPage(page);
     };
-
-    // --- Render Logic ---
 
     if (loading) {
         return <div style={appStyles}>Loading data...</div>;
     }
 
     if (error) {
-        // Display error message
         return <div style={{ ...appStyles, color: 'red', fontWeight: 'bold' }}>{error}</div>;
     }
 
@@ -163,7 +155,6 @@ function App() {
         <div style={appStyles}>
             <h1 style={{ color: '#2c3e50', textAlign: 'center' }}>Employee Administration Panel</h1>
 
-            {/* Employee Data Table */}
             <table style={tableStyles}>
                 <thead>
                     <tr>
@@ -176,8 +167,7 @@ function App() {
                 <tbody>
                     {currentData.map((employee, index) => (
                         <tr 
-                            key={employee.id} 
-                            // 💡 Use contrasting background colors for rows
+                            key={employee.id}
                             style={{ backgroundColor: index % 2 === 0 ? '#f0f0f0' : 'white' }}
                         >
                             <td style={thTdStyles}>{employee.id}</td>
@@ -188,10 +178,9 @@ function App() {
                     ))}
                 </tbody>
             </table>
-            
-            {/* Direct Page Navigation Controls */}
+
             <div style={{...buttonGroupStyles, marginBottom: '20px'}}>
-                {pageNumbers.map((page) => (
+                {pageNumbers.map(page => (
                     <button
                         key={page}
                         onClick={() => goToPage(page)}
@@ -202,7 +191,6 @@ function App() {
                 ))}
             </div>
 
-            {/* Previous/Next Controls */}
             <div style={buttonGroupStyles}>
                 <button
                     onClick={handlePrevious}
@@ -213,9 +201,9 @@ function App() {
                 </button>
 
                 <span style={{ margin: '0 10px', fontSize: '18px', color: '#333' }}>
-                    Page **{currentPage}** of **{totalPages}**
+                    Page {currentPage} of {totalPages}
                 </span>
-                
+
                 <button
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
@@ -224,8 +212,8 @@ function App() {
                     Next
                 </button>
             </div>
-            
-             <p style={{textAlign: 'center', marginTop: '20px', color: '#666'}}>
+
+            <p style={{textAlign: 'center', marginTop: '20px', color: '#666'}}>
                 Displaying {currentData.length} rows. Total employees: {data.length}
             </p>
         </div>
