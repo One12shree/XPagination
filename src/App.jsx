@@ -41,6 +41,7 @@ const buttonGroupStyles = {
     justifyContent: 'center',
     alignItems: 'center',
     gap: '10px',
+    marginBottom: '15px', // Added margin for separation
 };
 
 const buttonBaseStyles = {
@@ -53,6 +54,7 @@ const buttonBaseStyles = {
     backgroundColor: '#fff',
     transition: 'background-color 0.2s',
     color: '#333', // Ensure button text is visible
+    minWidth: '100px', // Standardize button width
 };
 
 const buttonActiveStyles = {
@@ -67,6 +69,26 @@ const buttonDisabledStyles = {
     ...buttonBaseStyles,
     cursor: 'not-allowed',
     opacity: 0.5,
+};
+
+// New style for page number buttons
+const pageNumberStyles = {
+    padding: '8px 12px',
+    cursor: 'pointer',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    fontSize: '14px',
+    margin: '0 3px',
+    backgroundColor: '#f5f5f5',
+    color: '#333',
+    fontWeight: 'normal',
+};
+
+const pageNumberActiveStyles = {
+    ...pageNumberStyles,
+    backgroundColor: '#2c3e50',
+    color: 'white',
+    border: '1px solid #2c3e50',
 };
 
 function App() {
@@ -99,6 +121,11 @@ function App() {
 
     // --- Pagination Calculations ---
     const totalPages = Math.ceil(data.length / ROWS_PER_PAGE);
+    
+    // Create an array of page numbers for direct navigation buttons
+    const pageNumbers = useMemo(() => {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }, [totalPages]);
 
     // Memoize the data slice to only recalculate when data or page changes
     const currentData = useMemo(() => {
@@ -114,6 +141,11 @@ function App() {
 
     const handlePrevious = () => {
         setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
+    };
+    
+    // Handler for direct page number clicks
+    const goToPage = (page) => {
+        setCurrentPage(page);
     };
 
     // --- Render Logic ---
@@ -157,7 +189,20 @@ function App() {
                 </tbody>
             </table>
             
-            {/* Pagination Controls */}
+            {/* Direct Page Navigation Controls */}
+            <div style={{...buttonGroupStyles, marginBottom: '20px'}}>
+                {pageNumbers.map((page) => (
+                    <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        style={page === currentPage ? pageNumberActiveStyles : pageNumberStyles}
+                    >
+                        {page}
+                    </button>
+                ))}
+            </div>
+
+            {/* Previous/Next Controls */}
             <div style={buttonGroupStyles}>
                 <button
                     onClick={handlePrevious}
